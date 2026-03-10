@@ -1,0 +1,13 @@
+# archivos compilados a cache
+** __pycache__/
+*.py[cod] 
+*.py.class
+.vscode/
+# entornos virtuales
+.venv/
+venv/
+bin/
+env/
+bin/
+include/
+lib/
