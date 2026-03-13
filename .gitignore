@@ -1,13 +1,25 @@
-# archivos compilados a cache
-** __pycache__/
-*.py[cod] 
-*.py.class
-.vscode/
-# entornos virtuales
-.venv/
+# --- Entornos Virtuales ---
 venv/
-bin/
 env/
+.venv/
 bin/
 include/
 lib/
+share/
+# --- Cache de Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+# --- Variables de Entorno (CRÍTICO) ---
+.env
+.flaskenv
+secrets.json
+# --- VS Code / Editores ---
+.vscode/
+.idea/
+*.swp
+# --- Datos y Machine Learning ---
+*.log
+*.csv
+*.xlsx
+.ipynb_checkpoints/
