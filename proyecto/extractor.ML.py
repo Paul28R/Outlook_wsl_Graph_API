@@ -1,6 +1,7 @@
 
 # esto carga las variables del archivo .env load_dotenv()
 import os 
+import pandas as pd
 from dotenv import load_dotenv
 #
 from pathlib import Path
@@ -50,9 +51,15 @@ def descargar_datos_entrenamiento(cantidad=10):
 if __name__ == "__main__":
     try:
         print("Iniciando descarga de datos...")
-        data = descargar_datos_entrenamiento()
-        for item in data:
-            print(f"Correo: {item['asunto'][:50]}...")
-        print(f"\nÉxito: Tienes {len(data)} ejemplos para tu futuro modelo.")
+        data = descargar_datos_entrenamiento(cantidad=50) # Subimos a 50 para tener mas datos
+        if data: 
+            df = pd.DataFrame(data) # Convertimos la lista en una tabla (DataFrame)
+            # Guardamos la tabla en una archivo CSV
+            df.to_csv('dataset_correos.csv', index=False, encoding='utf-8')
+            for item in data:
+                print(f"Correo: {item['asunto'][:50]}...")
+            print(f"\nÉxito: Tienes {len(data)} ejemplos guardados en 'dataset_correos.csv'.")
+        else:
+            print("No se descargaron datos.")
     except Exception as e:
         print(f"Error: {e}")
