@@ -2,6 +2,12 @@
 # esto carga las variables del archivo .env load_dotenv()
 import os 
 from dotenv import load_dotenv
+#
+from pathlib import Path
+# Esto busca el archivo .env un nivel arriba de donde esta el script
+env_path = Path(__file__).resolve().parent.parent / '.env'
+load_dotenv(dotenv_path=env_path)
+
 # esto se utiliza para extraer los correos
 from O365 import Account 
 
@@ -14,11 +20,13 @@ SECRET_VALUE = os.getenv('SECRET_VALUE')
 def conectar_api():
     """Funcion para autenticarse con la API de Microsoft."""
     credentials = (CLIENT_ID, SECRET_VALUE)
-    account = Account(credentials)
+    account = Account(credentials, auth_flow_type='authorization', tenant_id='common')
 
 
-    if not account.is_authenticated: # Esto creara el link enl  terminl de l primera
-        account.authenticate(scopes=['basic', 'message_all'])
+    if not account.is_authenticated:
+        # El scope 'offline_access' es para que no te pida login cada vez
+                                    #'basic', 'message_all'
+        account.authenticate(scopes=['https://graph.microsoft.com/Mail.Read','offline_access'])
     return account
 
 
