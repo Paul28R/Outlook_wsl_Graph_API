@@ -20,13 +20,17 @@ SECRET_VALUE = os.getenv('SECRET_VALUE')
 def conectar_api():
     """Funcion para autenticarse con la API de Microsoft."""
     credentials = (CLIENT_ID, SECRET_VALUE)
-    account = Account(credentials, auth_flow_type='authorization', tenant_id='common')
-
+    account = Account(credentials)
 
     if not account.is_authenticated:
-        # El scope 'offline_access' es para que no te pida login cada vez
-                                    #'basic', 'message_all'
-        account.authenticate(scopes=['https://graph.microsoft.com/Mail.Read','offline_access'])
+        # Definimos la url que pusimos en Azure
+        # url_nativa = 'https://login.microsoftonline.com/common/oauth2/nativeclient'
+        url_choque = 'http://localhost:8080'
+        # Iniciamos la autenticacion indicando que queremos que se quede en consola
+        # Esto evita que el proceso expire tan rapido
+        # account.authenticate(scopes=['basic','message_all'], redirect_uri=url_nativa)
+        account.authenticate(scopes=['https://graph.microsoft.com/Mail.Read'],redirect_uri=url_choque)
+    
     return account
 
 
