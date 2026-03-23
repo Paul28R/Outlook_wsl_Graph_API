@@ -23,3 +23,5 @@ secrets.json
 *.csv
 *.xlsx
 .ipynb_checkpoints/
+# --- Archivos ---
+o365_token.txt
