@@ -1,5 +1,8 @@
 
-# esto carga las variables del archivo .env load_dotenv()
+# Extraer datos del Correo
+
+# Carga las variables del archivo .env load_dotenv()
+
 import os 
 import pandas as pd
 from dotenv import load_dotenv
