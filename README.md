@@ -1,6 +1,6 @@
 # 📧 Outlook ML Classifier (WSL: Ubuntu)
 
-Este proyecto utiliza la **Microsoft Graph API** para extraer correos electrónicos de Outlook y aplicar modelos de **Machine Learning** para su clasificación automática. Está diseñado para ejecutarse en un entorno Linux (WSL/Ubuntu).
+Este proyecto utiliza la **Microsoft Graph API** para extraer correos electrónicos de Outlook y aplicar un modelo de **Machine Learning** para su clasificación automática. Está diseñado para ejecutarse en un entorno Linux (WSL/Ubuntu).
 
 ## 🚀 Características
 
@@ -9,7 +9,7 @@ Este proyecto utiliza la **Microsoft Graph API** para extraer correos electróni
 - **Clasificación ML**: Modelo de Naive Bayes con vectorización TF-IDF.
 - **Etiquetado manual**: Interfaz simple para etiquetar datos de entrenamiento.
 - **Contenedorización**: Dockerfile para ejecutar en entornos aislados.
-- **Autenticación OAuth2**: Uso de MSAL para autenticación segura.
+- **Autenticación OAuth2**: Uso de MSAL/O365 para autenticación segura.
 
 ---
 
@@ -19,7 +19,7 @@ Este proyecto utiliza la **Microsoft Graph API** para extraer correos electróni
 - **Cuenta de Microsoft/Outlook** con correos electrónicos
 - **Suscripción a Azure AD** (para registrar la aplicación)
 - **WSL/Ubuntu** o entorno Linux
-- **Docker** (opcional, para contenedorización)
+- **Docker** (opcional)
 
 ---
 
@@ -28,146 +28,122 @@ Este proyecto utiliza la **Microsoft Graph API** para extraer correos electróni
 ### 1. Clonar y configurar entorno
 
 ```bash
-# Clonar el repositorio
 git clone <tu-repositorio>
 cd Outlook_wsl_Graph_API
-
-# Crear entorno virtual
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
-
-# Instalar dependencias
 pip install -r requirements.txt
 ```
 
-### 2. Configuración de Azure AD y Microsoft Graph API
+### 2. Configurar variables de entorno
 
-Para conectar con la API de Outlook, necesitas registrar una aplicación en Azure Active Directory. Sigue estos pasos detallados:
-
-#### Paso 1: Registrar la aplicación en Azure Portal
-
-1. Ve a [Azure Portal](https://portal.azure.com/)
-2. Navega a **Azure Active Directory** > **App registrations**
-3. Haz clic en **New registration**
-4. Configura:
-   - **Name**: `Outlook ML Classifier` (o el nombre que prefieras)
-   - **Supported account types**: `Accounts in any organizational directory and personal Microsoft accounts`
-   - **Redirect URI**: Tipo `Web`, URL `http://localhost:8080` (para desarrollo local)
-
-#### Paso 2: Obtener credenciales
-
-Después del registro, obtén:
-- **Application (client) ID**: Copia este ID (ej: `5e43e56d-280e-4bed-8643-fcce74bd4dea`)
-- **Client Secret**: Ve a **Certificates & secrets** > **New client secret**
-  - Description: `Secret for Outlook ML`
-  - Expires: `12 months` (o según necesites)
-  - Copia el **Value** del secreto (no el Secret ID)
-
-#### Paso 3: Configurar permisos de API
-
-1. Ve a **API permissions** en tu app registration
-2. Haz clic en **Add a permission**
-3. Selecciona **Microsoft Graph**
-4. **Delegated permissions** (ya que actuamos en nombre del usuario):
-   - `Mail.Read` - Leer correos
-   - `User.Read` - Leer información básica del usuario
-5. Haz clic en **Grant admin consent** si tienes permisos de admin
-
-#### Paso 4: Configurar variables de entorno
-
-Crea un archivo `.env` en la raíz del proyecto:
+Crea un archivo `.env` en la raíz del proyecto con:
 
 ```env
 CLIENT_ID=tu_application_client_id_aqui
 SECRET_VALUE=tu_client_secret_value_aqui
 ```
 
-**Nota**: El archivo `.env` está en `.gitignore` para proteger tus credenciales.
-
-#### Paso 5: Autenticación inicial
-
-La primera vez que ejecutes el script, se abrirá una ventana del navegador para autenticarte:
-
-1. Ejecuta `python principal/extractor.ML.py`
-2. Se abrirá tu navegador predeterminado
-3. Inicia sesión con tu cuenta de Microsoft
-4. Otorga los permisos solicitados
-5. El token se guardará automáticamente en `o365_token.txt`
+Este archivo se mantiene fuera del control de versiones.
 
 ---
 
-## 📊 Flujo de Trabajo (Pipeline Completo)
+## 📂 Estructura de archivos relevante
 
-### Paso 1: Extracción de datos
-
-Ejecuta el script de extracción para obtener correos de Outlook:
-
-```bash
-cd principal
-python extractor.ML.py
+```
+Outlook_wsl_Graph_API/
+├── Dockerfile
+├── README.md
+├── requirements.txt
+├── .env
+├── src/
+│   ├── __init__.py
+│   ├── a_extractor_ml.py
+│   ├── c_etiquetar_datos.py
+│   ├── d_entrenar_ia.py
+│   ├── e_probar_ia.py
+│   ├── main.py
+│   └── principal/
+│       ├── __init__.py
+│       └── procesar_datos.py
+└── proyecto/
 ```
 
-Este script:
-- Se conecta a Microsoft Graph API usando OAuth2
-- Extrae asuntos y cuerpos de correos (configurable la cantidad)
-- Guarda los datos crudos en `../data/dataset_correos.csv`
+---
 
-### Paso 2: Procesamiento de datos
+## 📊 Flujo de trabajo
 
-Limpia y prepara los datos para ML:
+### 1) Extracción de datos
 
-```bash
-python procesar_datos.py
-```
-
-Procesos realizados:
-- Tokenización del texto usando NLTK
-- Eliminación de stopwords en español
-- Limpieza de URLs y caracteres especiales
-- Conversión a minúsculas
-- Guarda resultado en `../data/dataset_limpio_ml.csv`
-
-### Paso 3: Etiquetado de datos
-
-Etiqueta manualmente los correos para entrenamiento:
+Extrae correos desde Outlook y guarda un CSV con asunto y cuerpo previo.
 
 ```bash
-python etiquetar_datos.py
+python3 src/a_extractor_ml.py
 ```
 
-- Carga datos limpios
-- Muestra cada correo para asignar categoría
-- Categorías sugeridas: Trabajo, Social, Sistema, Spam, etc.
-- Presiona `salir` para guardar progreso
-- Resultado: `../data/dataset_etiquetado.csv`
+Salida esperada:
+- `dataset_correos.csv`
 
-### Paso 4: Entrenamiento del modelo
+### 2) Procesamiento de datos
 
-Entrena el modelo de Machine Learning:
+Limpia y tokeniza el texto para generar el dataset listo para etiquetar.
 
 ```bash
-python entrenar_ia.py
+python3 src/principal/procesar_datos.py
 ```
 
-Proceso:
-- Carga datos etiquetados
-- Vectorización TF-IDF
-- Entrenamiento con Naive Bayes
-- Evaluación con métricas de clasificación
-- Guarda modelo en `../models/modelo_correos.pkl`
-- Guarda vectorizador en `../models/vectorizador.pkl`
+Salida esperada:
+- `dataset_limpio_ml.csv`
 
-### Paso 5: Prueba del modelo
+### 3) Etiquetado de datos
 
-Prueba la clasificación en tiempo real:
+Asigna manualmente categorías a los correos.
 
 ```bash
-python probar.ia.py
+python3 src/c_etiquetar_datos.py
 ```
 
-- Ingresa texto de correo
-- Obtiene predicción de categoría
-- Muestra confianza del modelo
+Salida esperada:
+- `dataset_etiquetado.csv`
+
+### 4) Entrenamiento del modelo
+
+Entrena el modelo Naive Bayes usando los datos etiquetados.
+
+```bash
+python3 src/d_entrenar_ia.py
+```
+
+Salida esperada:
+- `modelo_correos.pkl`
+- `vectorizador.pkl`
+
+### 5) Probar el modelo
+
+Verifica la clasificación en tiempo real con texto de ejemplo.
+
+```bash
+python3 src/e_probar_ia.py
+```
+
+---
+
+## 🧠 ¿Qué hace cada archivo?
+
+- `src/a_extractor_ml.py`: extrae datos desde Outlook y guarda `dataset_correos.csv`.
+- `src/principal/procesar_datos.py`: limpia y tokeniza el texto, guarda `dataset_limpio_ml.csv`.
+- `src/c_etiquetar_datos.py`: etiqueta datos manualmente y guarda `dataset_etiquetado.csv`.
+- `src/d_entrenar_ia.py`: entrena el modelo y guarda los archivos `modelo_correos.pkl` y `vectorizador.pkl`.
+- `src/e_probar_ia.py`: carga el modelo guardado y permite predecir la categoría de un nuevo texto.
+- `src/main.py`: punto de entrada principal en desarrollo para orquestar el pipeline.
+
+---
+
+## 🔧 Notas importantes
+
+- El archivo `.env` debe contener `CLIENT_ID` y `SECRET_VALUE`.
+- Si no tienes tokens válidos, `src/a_extractor_ml.py` solicitará la autenticación en el navegador.
+- Los datos intermedios se guardan en la raíz del proyecto como CSV.
 
 ---
 
@@ -182,99 +158,15 @@ docker build -t outlook-ml-classifier .
 ### Ejecutar contenedor
 
 ```bash
-# Para extracción de datos
-docker run --rm -v $(pwd)/data:/app/data -v $(pwd)/o365_token.txt:/app/o365_token.txt outlook-ml-classifier
-
-# Para procesamiento
-docker run --rm -v $(pwd)/data:/app/data outlook-ml-classifier python principal/procesar_datos.py
+docker run --rm -v $(pwd):/app outlook-ml-classifier python3 src/a_extractor_ml.py
 ```
 
-**Nota**: Asegúrate de tener el token de autenticación montado si usas Docker.
+Ajusta el volumen según tus rutas.
 
 ---
 
-## 📁 Estructura del Proyecto
+## 🚀 Siguientes pasos
 
-```
-Outlook_wsl_Graph_API/
-├── Dockerfile                    # Configuración de contenedor
-├── README.md                     # Esta documentación
-├── requirements.txt              # Dependencias Python
-├── .env                          # Variables de entorno (no versionado)
-├── o365_token.txt               # Token de autenticación (generado)
-├── data/                         # Datos del proyecto
-│   ├── dataset_correos.csv       # Datos crudos extraídos
-│   ├── dataset_limpio_ml.csv     # Datos procesados
-│   └── dataset_etiquetado.csv    # Datos etiquetados
-├── models/                       # Modelos entrenados
-│   ├── modelo_correos.pkl        # Modelo de clasificación
-│   └── vectorizador.pkl          # Vectorizador TF-IDF
-└── principal/                    # Scripts principales
-    ├── extractor.ML.py           # Extracción desde Graph API
-    ├── procesar_datos.py         # Limpieza de datos
-    ├── etiquetar_datos.py        # Etiquetado manual
-    ├── entrenar_ia.py            # Entrenamiento ML
-    └── probar.ia.py              # Pruebas del modelo
-```
-
----
-
-## 🔧 Tecnologías Utilizadas
-
-- **Microsoft Graph API**: Para acceso a correos de Outlook
-- **MSAL (Microsoft Authentication Library)**: Autenticación OAuth2
-- **O365 Python Library**: Cliente para Graph API
-- **NLTK**: Procesamiento de lenguaje natural
-- **Scikit-learn**: Machine Learning (Naive Bayes, TF-IDF)
-- **Pandas**: Manipulación de datos
-- **Docker**: Contenedorización
-
----
-
-## 🚨 Solución de Problemas
-
-### Error de autenticación
-- Verifica que el `.env` tenga las credenciales correctas
-- Borra `o365_token.txt` y vuelve a autenticar
-- Asegúrate de que los permisos estén otorgados en Azure
-
-### Error de dependencias
-```bash
-pip install --upgrade pip
-pip install -r requirements.txt --force-reinstall
-```
-
-### NLTK downloads
-Si hay errores con NLTK:
-```python
-import nltk
-nltk.download('punkt')
-nltk.download('punkt_tab')
-nltk.download('stopwords')
-```
-
----
-
-## 📈 Mejoras Futuras
-
-- [ ] Interfaz web para etiquetado
-- [ ] Más modelos de ML (SVM, Random Forest)
-- [ ] Clasificación automática de nuevos correos
-- [ ] Integración con reglas de Outlook
-- [ ] Soporte multiidioma
-
----
-
-## 📊 Flujo de Datos (Data Pipeline)
-
-```mermaid
-graph TD
-    A[Microsoft Graph API] -->|extractor.ML.py| B(dataset_correos.csv)
-    B -->|procesar_datos.py| C(dataset_limpio_ml.csv)
-    C -->|etiquetar_datos.py| D(dataset_etiquetado.csv)
-    D -->|entrenar_ia.py| E[Modelo .pkl + Vectorizador .pkl]
-    E -->|probar.ia.py| F{Inferencia en Vivo}
-    A -->|OAuth2| G[o365_token.txt]
-    H[Azure AD App] -->|CLIENT_ID + SECRET| A
-```
-
+- Asegurar que `src/main.py` importe los módulos correctos.
+- Mejorar el etiquetado con interfaz más amigable.
+- Añadir carpetas `data/` y `models/` si quieres mantener los archivos organizados.

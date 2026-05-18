@@ -3,7 +3,7 @@ FROM python:3.11-slim
 # 2. Directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-# Copiamos los requerimientos e instalamos
+# requerimientos e instalamos
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
@@ -12,4 +12,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 #ejecutamos el extractor (o el script que desees)
-CMD ["python", "extractor.ML.py"]
+CMD ["python", "main.py"]
